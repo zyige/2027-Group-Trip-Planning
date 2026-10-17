@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intro animation — design options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f3d3e; --ink-light:#1b5456; --sand:#fdf6ec; --sand-dark:#f3e8d6;
+    --coral:#ff6b4a; --coral-dark:#e4512f; --gold:#d9a44a; --line:#e3d8c3; --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--sand);color:var(--ink);font-family:'Inter',sans-serif;}
+  h1{font-family:'Fraunces',serif;font-size:1.6rem;text-align:center;margin:36px 0 4px;}
+  .sub{text-align:center;color:#5b7b7b;font-size:0.92rem;margin:0 0 24px;}
+  .controls{display:flex;justify-content:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .controls button{
+    background:#fff;border:1px solid var(--line);color:var(--ink);padding:11px 18px;
+    border-radius:999px;font-weight:600;font-size:0.88rem;cursor:pointer;font-family:'Inter',sans-serif;
+  }
+  .controls button.active{background:var(--coral);color:#fff;border-color:var(--coral);}
+  .replay-row{text-align:center;margin-bottom:28px;}
+  .replay-row button{
+    background:var(--ink);color:#fff;border:none;padding:9px 20px;border-radius:999px;
+    font-weight:600;font-size:0.82rem;cursor:pointer;
+  }
+  .concept-label{text-align:center;font-size:0.84rem;color:#6a8585;margin:-14px 0 22px;}
+
+  .stage{
+    position:relative;width:100%;max-width:680px;height:460px;margin:0 auto 40px;
+    border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(15,61,62,0.18);
+    border:1px solid var(--line);background:var(--sand);
+  }
+
+  /* mock site revealed underneath */
+  .stage-site{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--ink) 0%, var(--ink-light) 55%, #2a6e6f 100%);
+    color:var(--sand);text-align:center;padding:30px;
+    opacity:0;transform:scale(0.96);transition:opacity .5s ease, transform .5s ease;
+  }
+  .stage-site.revealed{opacity:1;transform:scale(1);}
+  .stage-site h2{font-family:'Fraunces',serif;font-size:1.8rem;margin:0 0 10px;}
+  .stage-site p{opacity:0.85;font-size:0.92rem;max-width:380px;margin:0 0 18px;}
+  .stage-site .pills{display:flex;gap:8px;}
+  .stage-site .pills span{background:rgba(255,255,255,0.15);padding:8px 16px;border-radius:999px;font-size:0.8rem;font-weight:600;}
+
+  .stage-intro{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity .4s ease;}
+  .stage-intro.hidden{opacity:0;pointer-events:none;}
+
+  .plane{
+    position:absolute;font-size:2.2rem;left:-10%;top:55%;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25));
+    opacity:0;
+  }
+
+  /* --- Concept A: envelope --- */
+  #stage-a{background:linear-gradient(135deg,var(--ink) 0%, var(--ink-light) 100%);}
+  .envelope{width:210px;height:140px;position:relative;cursor:pointer;perspective:600px;}
+  .env-back{position:absolute;inset:0;background:var(--sand-dark);border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,0.25);}
+  .env-flap{
+    position:absolute;top:0;left:0;width:100%;height:0;border-left:105px solid transparent;
+    border-right:105px solid transparent;border-top:70px solid var(--coral);
+    transform-origin:top;transition:transform .6s ease;z-index:3;
+  }
+  .envelope.open .env-flap{transform:rotateX(180deg);}
+  .env-letter{
+    position:absolute;left:14px;right:14px;top:18px;height:96px;background:#fff;border-radius:6px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.15);z-index:2;display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:10px;font-family:'Fraunces',serif;font-style:italic;font-size:0.95rem;color:var(--ink);
+    opacity:0;transition:transform .8s cubic-bezier(.2,.8,.2,1), opacity .5s ease .25s;
+  }
+  .envelope.open .env-letter{transform:translateY(-130px) scale(1.05);opacity:1;}
+  .env-hint{position:absolute;bottom:-34px;left:0;right:0;text-align:center;color:var(--sand);font-size:0.8rem;opacity:0.8;}
+
+  /* --- Concept B: paper airplane throw --- */
+  #stage-b{background:linear-gradient(135deg,var(--ink) 0%, var(--ink-light) 100%);}
+  .plane-b{left:8%;top:72%;}
+  .plane-b.fly{animation:flyPath 1.8s ease-in-out forwards;}
+  @keyframes flyPath{
+    0%{opacity:1;left:8%;top:72%;transform:rotate(-15deg) scale(0.9);}
+    35%{left:38%;top:30%;transform:rotate(5deg) scale(1.1);}
+    70%{left:72%;top:38%;transform:rotate(20deg) scale(1);}
+    100%{left:106%;top:10%;transform:rotate(35deg) scale(0.75);opacity:0.2;}
+  }
+
+  /* --- Concept C: postcard flip --- */
+  #stage-c{background:linear-gradient(135deg,var(--ink) 0%, var(--ink-light) 100%);}
+  .postcard-wrap{perspective:900px;}
+  .postcard{
+    width:260px;height:170px;position:relative;transition:transform .4s ease, opacity .4s ease;
+  }
+  .postcard.flip{transform:rotateY(180deg);}
+  .postcard.shrink{transform:rotateY(180deg) scale(0.75);opacity:0;}
+  .pc-face{
+    position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;
+    box-shadow:0 12px 26px rgba(0,0,0,0.25);
+  }
+  .pc-front{background:linear-gradient(135deg,var(--coral) 0%, var(--gold) 100%);color:#fff;}
+  .pc-front .stamp{
+    position:absolute;top:10px;right:10px;width:34px;height:34px;border:2px dashed rgba(255,255,255,0.7);
+    border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem;
+  }
+  .pc-front h3{font-family:'Fraunces',serif;margin:0 0 4px;font-size:1.3rem;}
+  .pc-front span{font-size:0.78rem;opacity:0.9;}
+  .pc-back{
+    background:repeating-linear-gradient(#fff, #fff 27px, #eadfc8 28px);color:var(--ink);
+    transform:rotateY(180deg);font-family:'Fraunces',serif;font-style:italic;font-size:1.02rem;
+    text-align:center;line-height:1.5;
+  }
+  .pc-back small{display:block;font-family:'Inter',sans-serif;font-style:normal;color:#6a8585;margin-top:8px;font-size:0.75rem;}
+
+  footer{text-align:center;font-size:0.8rem;color:#8a9d9d;padding:0 0 50px;}
+</style>
+</head>
+<body>
+
+<h1>Intro animation — 3 options</h1>
+<div class="sub">Click a concept to preview it, hit Replay to see it again. Nothing here is wired into the real site yet.</div>
+
+<div class="controls">
+  <button class="concept-btn active" data-concept="a">A · Open the envelope</button>
+  <button class="concept-btn" data-concept="b">B · Paper airplane throw</button>
+  <button class="concept-btn" data-concept="c">C · Postcard flip</button>
+</div>
+<div class="concept-label" id="concept-label">Click the envelope below to open it.</div>
+<div class="replay-row"><button id="replay-btn">↻ Replay</button></div>
+
+<div class="stage" id="stage">
+
+  <div class="stage-site" id="stage-site">
+    <h2>Where to in 2027? 🌊</h2>
+    <p>A couples trip for us + a few other pairs. Browse the options, then tell us your dates &amp; budget.</p>
+    <div class="pills"><span>Trip Ideas</span><span>Add Your Response</span></div>
+  </div>
+
+  <!-- A -->
+  <div class="stage-intro" id="stage-a">
+    <div class="envelope" id="envelope">
+      <div class="env-back"></div>
+      <div class="env-letter">You're invited on a trip. ✈️<br>2027, somewhere warm.</div>
+      <div class="env-flap"></div>
+      <div class="env-hint">click the envelope</div>
+    </div>
+    <div class="plane" id="plane-a">✈️</div>
+  </div>
+
+  <!-- B -->
+  <div class="stage-intro hidden" id="stage-b">
+    <div class="plane plane-b" id="plane-b">✈️</div>
+  </div>
+
+  <!-- C -->
+  <div class="stage-intro hidden" id="stage-c">
+    <div class="postcard-wrap">
+      <div class="postcard" id="postcard">
+        <div class="pc-face pc-front">
+          <div class="stamp">✈️</div>
+          <h3>2027</h3>
+          <span>Tulum · Punta Cana · Jamaica · the high seas</span>
+        </div>
+        <div class="pc-face pc-back">
+          Thinking about a trip together in 2027?
+          <small>— Yigga &amp; Tristan</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Design exploration only — pick one and I'll wire it into the live planner.</footer>
+
+<script>
+const labels = {
+  a: "Click the envelope below to open it.",
+  b: "Plays automatically — the plane throws itself across the screen.",
+  c: "Plays automatically — the postcard flips, then flies off."
+};
+
+let current = 'a';
+const stageSite = document.getElementById('stage-site');
+
+function resetStage() {
+  stageSite.classList.remove('revealed');
+  ['a','b','c'].forEach(id => document.getElementById('stage-' + id).classList.add('hidden'));
+  document.getElementById('envelope').classList.remove('open');
+  document.getElementById('plane-a').style.opacity = 0;
+  document.getElementById('plane-b').classList.remove('fly');
+  const postcard = document.getElementById('postcard');
+  postcard.classList.remove('flip', 'shrink');
+}
+
+function playConcept(id) {
+  resetStage();
+  document.getElementById('stage-' + id).classList.remove('hidden');
+  document.getElementById('concept-label').textContent = labels[id];
+
+  if (id === 'b') {
+    // autoplay: throw the plane, then reveal
+    requestAnimationFrame(() => {
+      const plane = document.getElementById('plane-b');
+      plane.style.opacity = 1;
+      plane.classList.add('fly');
+    });
+    setTimeout(() => {
+      document.getElementById('stage-b').classList.add('hidden');
+      stageSite.classList.add('revealed');
+    }, 1800);
+  }
+
+  if (id === 'c') {
+    const postcard = document.getElementById('postcard');
+    setTimeout(() => postcard.classList.add('flip'), 500);
+    setTimeout(() => postcard.classList.add('shrink'), 1700);
+    setTimeout(() => {
+      document.getElementById('stage-c').classList.add('hidden');
+      stageSite.classList.add('revealed');
+    }, 2300);
+  }
+  // concept 'a' waits for a click, handled by its own listener
+}
+
+document.getElementById('envelope').addEventListener('click', function () {
+  if (current !== 'a' || this.classList.contains('open')) return;
+  this.classList.add('open');
+  const plane = document.getElementById('plane-a');
+  setTimeout(() => {
+    plane.style.opacity = 1;
+    plane.style.transition = 'left 1.3s ease-in-out, top 1.3s ease-in-out, transform 1.3s ease-in-out';
+    plane.style.left = '106%';
+    plane.style.top = '10%';
+    plane.style.transform = 'rotate(30deg) scale(0.8)';
+  }, 300);
+  setTimeout(() => {
+    document.getElementById('stage-a').classList.add('hidden');
+    stageSite.classList.add('revealed');
+  }, 1900);
+});
+
+document.querySelectorAll('.concept-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.concept-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    current = btn.dataset.concept;
+    playConcept(current);
+  });
+});
+
+document.getElementById('replay-btn').addEventListener('click', () => playConcept(current));
+</script>
+</body>
+</html>
